@@ -2,6 +2,7 @@ import asyncio
 import json
 import time
 import uuid
+from typing import Any, Dict, AsyncGenerator
 
 from fastapi import APIRouter
 from starlette.requests import Request
@@ -69,10 +70,10 @@ async def gen_json_data(body):
         "system_fingerprint": "fp_ded0d14823"
     }
 
-async def mock_third_party_api():
+async def mock_third_party_api() -> AsyncGenerator[Dict[str, Any], None]:
     user_message = "Hello"
 
-    async def stream_generator():
+    async def stream_generator() -> AsyncGenerator[Dict[str, Any], None]:
         response_text = f"This is a mock streaming response to: {user_message}. "
         response_text += "I'll count from 1 to 5 to demonstrate streaming capability. "
         response_text += "One. Two. Three. Four. Five."
@@ -95,7 +96,9 @@ async def mock_third_party_api():
 
     return stream_generator()
 
-async def parse_third_party_stream(stream_generator):
+async def parse_third_party_stream(
+    stream_generator: AsyncGenerator[Dict[str, Any], None]
+) -> AsyncGenerator[str, None]:
     response_id = f"chatcmpl-{uuid.uuid4()}"
     async for third_party_data in stream_generator:
         try:
