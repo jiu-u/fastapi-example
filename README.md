@@ -31,6 +31,18 @@ $ .venv\Scripts\activate
 ## 安装包
 
 ```bash
-uv add fastapi httpx uvicorn pydantic
+uv add fastapi httpx uvicorn pydantic python-dotenv python-multipart
+```
+
+## 运行
+
+```bash
+uv run main.py
+```
+
+或者
+
+```bash
+uvicorn main:app --reload --port 9999
 ```
 
