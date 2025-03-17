@@ -8,6 +8,7 @@ class Message(BaseModel):
     content: Any = None
     name: Optional[str] = None
 
+
 class ChatCompletionRequest(BaseModel):
     model: str
     messages: List[Message]
@@ -20,16 +21,19 @@ class ChatCompletionRequest(BaseModel):
     frequency_penalty: Optional[float] = 0.0
     user: Optional[str] = None
 
+
 class ChatCompletionChoice(BaseModel):
     index: int
     message: Optional[Message] = None
     finish_reason: Optional[str] = None
     delta: Optional[Dict[str, str]] = None
 
+
 class ChatCompletionUsage(BaseModel):
     prompt_tokens: int
     completion_tokens: int
     total_tokens: int
+
 
 class ChatCompletionResponse(BaseModel):
     id: str

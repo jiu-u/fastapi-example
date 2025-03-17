@@ -2,7 +2,11 @@ from typing import Union, List, Optional
 
 from fastapi import Depends
 from fastapi.params import Header
-from fastapi.security import OAuth2PasswordBearer, HTTPBearer, HTTPAuthorizationCredentials
+from fastapi.security import (
+    OAuth2PasswordBearer,
+    HTTPBearer,
+    HTTPAuthorizationCredentials,
+)
 from pydantic import BaseModel
 from starlette.requests import Request
 
@@ -13,12 +17,15 @@ oauth2_scheme = OAuth2PasswordBearer(tokenUrl="token")
 
 default_ticket = "linuxdo"
 
+
 def set_ticket(ticket: str):
     global default_ticket
     default_ticket = ticket
 
+
 def get_ticket():
     return default_ticket
+
 
 fake_users_db = {
     "admin": {
@@ -29,6 +36,7 @@ fake_users_db = {
         "disabled": False,
     },
 }
+
 
 def validate_user(username: str, password: str) -> (bool, str):
     user = fake_users_db.get(username)
@@ -65,45 +73,57 @@ def fake_decode_token(token):
     return user
 
 
-async def get_current_user(request:Request,token: str = Depends(oauth2_scheme)):
+async def get_current_user(request: Request, token: str = Depends(oauth2_scheme)):
     user = fake_decode_token(token)
     if not user:
-        tools.set_context(request,constant.CONTEXT_DATA,"token is invalid")
+        tools.set_context(request, constant.CONTEXT_DATA, "token is invalid")
         raise errors.Unauthorized
     return user
 
-def check_permission(permissions:List[str]):
+
+def check_permission(permissions: List[str]):
     async def _check_permission(current_user: User = Depends(get_current_user)):
         # 获取用户
         # 检查权限
         return current_user
+
     return _check_permission
 
+
 security = HTTPBearer()
-async def get_current_user_by_ticket(request:Request,credentials: HTTPAuthorizationCredentials = Depends(security)):
+
+
+async def get_current_user_by_ticket(
+    request: Request, credentials: HTTPAuthorizationCredentials = Depends(security)
+):
     print(credentials)
     return
 
-async def get_current_user_by_ticket2(request:Request,authorization: str = Header(None)):
+
+async def get_current_user_by_ticket2(
+    request: Request, authorization: str = Header(None)
+):
     print(authorization)
     return
 
-async def get_current_user_by_ticket3(x_token: Optional[str] = Header(None, alias="Authorization")):
+
+async def get_current_user_by_ticket3(
+    x_token: Optional[str] = Header(None, alias="Authorization"),
+):
     print(x_token)
     return
 
-async def get_current_user_by_ticket4(request:Request):
+
+async def get_current_user_by_ticket4(request: Request):
     authorization = request.headers.get("Authorization")
     if not authorization:
-        set_context(request,constant.CONTEXT_DATA,"token is required")
+        set_context(request, constant.CONTEXT_DATA, "token is required")
         raise errors.Unauthorized
     token = authorization.removeprefix("Bearer ")
     if not token:
-        set_context(request,constant.CONTEXT_DATA,"token is required")
+        set_context(request, constant.CONTEXT_DATA, "token is required")
         raise errors.Unauthorized
     if token != get_ticket():
-        set_context(request,constant.CONTEXT_DATA,"token is invalid")
+        set_context(request, constant.CONTEXT_DATA, "token is invalid")
         raise errors.Unauthorized
     return fake_decode_token(token)
-
-

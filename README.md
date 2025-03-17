@@ -46,3 +46,12 @@ uv run main.py
 uvicorn main:app --reload --port 9999
 ```
 
+## 代码格式化、代码检查
+
+```bash
+uv add --dev ruff
+uv run ruff check
+uv run ruff check --fix
+uv run ruff format
+```
+

@@ -12,9 +12,11 @@ from core import res
 
 router = APIRouter()
 
+
 @router.get("/state")
 def raise_error(request: Request):
     return res.success(data={"request_id": str(request.state.id)})
+
 
 @router.post("/chat/completions")
 async def open_chat_completions(request: Request):
@@ -29,10 +31,11 @@ async def open_chat_completions(request: Request):
             stream_generator = await mock_third_party_api()
             return StreamingResponse(
                 parse_third_party_stream(stream_generator),
-                media_type="text/event-stream"
+                media_type="text/event-stream",
             )
     except json.JSONDecodeError:
         return JSONResponse(status_code=400, content={"error": "Invalid JSON"})
+
 
 async def gen_json_data(body):
     return {
@@ -46,29 +49,27 @@ async def gen_json_data(body):
                 "message": {
                     "role": "assistant",
                     "content": "你好，这是一条测试消息！",
-                    "refusal": None
+                    "refusal": None,
                 },
                 "logprobs": None,
-                "finish_reason": "stop"
+                "finish_reason": "stop",
             }
         ],
         "usage": {
             "prompt_tokens": 15,
             "completion_tokens": 406,
             "total_tokens": 421,
-            "prompt_tokens_details": {
-                "cached_tokens": 0,
-                "audio_tokens": 0
-            },
+            "prompt_tokens_details": {"cached_tokens": 0, "audio_tokens": 0},
             "completion_tokens_details": {
                 "reasoning_tokens": 0,
                 "audio_tokens": 0,
                 "accepted_prediction_tokens": 0,
-                "rejected_prediction_tokens": 0
-            }
+                "rejected_prediction_tokens": 0,
+            },
         },
-        "system_fingerprint": "fp_ded0d14823"
+        "system_fingerprint": "fp_ded0d14823",
     }
+
 
 async def mock_third_party_api() -> AsyncGenerator[Dict[str, Any], None]:
     user_message = "Hello"
@@ -88,7 +89,7 @@ async def mock_third_party_api() -> AsyncGenerator[Dict[str, Any], None]:
                 "chunk_id": i,
                 "content": chunk + (". " if i < len(chunks) - 1 else "") + "\n",
                 "is_final": i == len(chunks) - 1,
-                "sequence": i
+                "sequence": i,
             }
 
             yield chunk_data
@@ -96,8 +97,9 @@ async def mock_third_party_api() -> AsyncGenerator[Dict[str, Any], None]:
 
     return stream_generator()
 
+
 async def parse_third_party_stream(
-    stream_generator: AsyncGenerator[Dict[str, Any], None]
+    stream_generator: AsyncGenerator[Dict[str, Any], None],
 ) -> AsyncGenerator[str, None]:
     response_id = f"chatcmpl-{uuid.uuid4()}"
     async for third_party_data in stream_generator:
@@ -110,12 +112,12 @@ async def parse_third_party_stream(
                 "choices": [
                     {
                         "index": 0,
-                        "delta": {
-                            "content": third_party_data["content"]
-                        },
-                        "finish_reason": "stop" if third_party_data.get("is_final", False) else None
+                        "delta": {"content": third_party_data["content"]},
+                        "finish_reason": "stop"
+                        if third_party_data.get("is_final", False)
+                        else None,
                     }
-                ]
+                ],
             }
             yield f"data: {json.dumps(openai_format)}\n\n"
         except Exception as e:
